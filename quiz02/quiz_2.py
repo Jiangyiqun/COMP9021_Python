@@ -17,35 +17,37 @@ and the length of L being input by the user, and generates:
   in their natural order.
 '''
 
-
 import sys
 from random import seed, randint
 from math import gcd
 
+try:
+    arg_for_seed, length, max_value = input('Enter three nonnegative integers: ').split()
+except ValueError:
+    print('Incorrect input, giving up.')
+    sys.exit()
+try:
+    arg_for_seed, length, max_value = int(arg_for_seed), int(length), int(max_value)
+    if arg_for_seed < 0 or length < 0 or max_value < 0:
+        raise ValueError
+except ValueError:
+    print('Incorrect input, giving up.')
+    sys.exit()
 
-# try:
-#     arg_for_seed, length, max_value = input('Enter three nonnegative integers: ').split()
-# except ValueError:
-#     print('Incorrect input, giving up.')
-#     sys.exit()
-# try:
-#     arg_for_seed, length, max_value = int(arg_for_seed), int(length), int(max_value)
-#     if arg_for_seed < 0 or length < 0 or max_value < 0:
-#         raise ValueError
-# except ValueError:
-#     print('Incorrect input, giving up.')
-#     sys.exit()
-#
-# seed(arg_for_seed)
-# L = [randint(0, max_value) for _ in range(length)]
-# if not any(e for e in L):
-#     print('\nI failed to generate one strictly positive number, giving up.')
-#     sys.exit()
-# print('\nThe generated list is:')
-# print('  ', L)
+seed(arg_for_seed)
+L = [randint(0, max_value) for _ in range(length)]
+if not any(e for e in L):
+    print('\nI failed to generate one strictly positive number, giving up.')
+    sys.exit()
+print('\nThe generated list is:')
+print('  ', L)
 
 fractions = []
 spot_on, closest_1, closest_2 = [None] * 3
+
+
+# Jack's code begins
+
 
 # this function can return two elements (float, string)
 # string is a fraction of numerator/denominator
@@ -61,53 +63,51 @@ def fran(numerator, denominator):
         return str(int(numerator)) + '/' + str(int(denominator))
 
 
-# Jack's code begins
-L = [8, 0, 4, 4,  27, 25]
-print('L = ', L)
-
 # L1 is sorted L without duplicated elements, and without 0
-L1 = list(set(L))   # sort and remove duplicated elements
-if 0 in L1:         # mark is there is 0 in L
+L1 = list(set(L))  # remove duplicated elements
+L1.sort()    # sort L1
+if 0 in L1:  # mark if there is 0 in L
     zero = True
+    L1.remove(0)  # remove 0 from L1
 else:
     zero = False
-L1.remove(0)        # remove 0 from L1
-print('zero = ', zero)
-print('L1 = ', L1)
+# print('zero = ', zero)
+# print('L1 = ', L1)
 
 # L2 is a tuple [(float, str), (float, str),(float, str) ...]
 # string is a fraction
 # float is the value of the fraction
 # L2 is sorted by float
 L2 = []
-for i in range(len(L1)):
-    for j in range(i + 1,len(L1)):
+for i in range(len(L1)):    # refer to def fran()
+    for j in range(i + 1, len(L1)):
+        if (L1[i] / L1[j], fran(L1[i], L1[j])) in L2:
+            continue
         L2.append((L1[i] / L1[j], fran(L1[i], L1[j])))
-L2.sort()   # sort by the first element
-print('L2 = ', L2)
+if zero:            # add 0 if needed
+    L2.append((0, '0'))
+L2.append((1, '1'))  # add 1
+L2.sort()  # sort by the first element
+# print('L2 = ', L2)
 
 # generate fractions[]
-if zero:                  # add 0 if needed
-    fractions.append('0')
-for e in L2:              # add other fractions
+for e in L2:  # add other fractions
     fractions.append(e[1])
-fractions.append('1')    # add 1
 
 # L3 is sorted by abs(L2 - 0.5)
 # search for 1/2 and generate closet_1 and closet_2
-L3 = sorted(L2, key = lambda e:abs(e[0] - 0.5)) # L3 is sorted by abs(L2 - 0.5)
-L3_float,L3_fran = zip(*L3)
-
-print('L3 = ', L3)
-print('L3_float = ', L3_float)
-print('L3_fran = ', L3_fran)
-
-if L3_float[0] == 0.5:
+L3 = sorted(L2, key=lambda e: abs(e[0] - 0.5))  # L3 is sorted by abs(L2 - 0.5)
+L3_float, L3_fran = zip(*L3)  # divide L3 into two lists
+# print('L3 = ', L3)
+# print('L3_float = ', L3_float)
+# print('L3_fran = ', L3_fran)
+if L3_float[0] == 0.5:  # find 0.5
     spot_on = True
 else:
-    closest_1 = L3_fran[0]
-    if L3_float[0] != L3_float[1]:
-        closest_2 = L3_fran[1]
+    closest_1 = L3_fran[0]  # only 1 closest value to 0.5
+    if len(L3) > 1:         # if L = [1], so there is no L3[1]
+        if abs(L3_float[0] - 0.5) == abs(L3_float[1] - 0.5):  # two closest value to 0.5
+                closest_2 = L3_fran[1]
 
 # Jack's code ends
 
