@@ -28,7 +28,7 @@
 # and for a given step size, from stairs with the smallest number of steps to stairs
 # with the largest number of stairs.
 #
-# Written by *** and Eric Martin for COMP9021
+# Written by Eric Martin and Sarika Azad for COMP9021
 
 
 from random import seed, randint
@@ -40,39 +40,47 @@ def display_grid():
     for i in range(len(grid)):
         print('   ', ' '.join(str(int(grid[i][j] != 0)) for j in range(len(grid))))
 
+##########################
 def stairs_in_grid():
-    # Replace return {} above with your code
-    
-#here it starts
-    from random import seed,randint
-def display_grid():
-    for i in range(len(grid)):
-        print('   ', ' '.join(str(int(grid[i][j] != 0)) for j in range(len(grid))))
-seed(0)
-grid = [[randint(0, 3) for _ in range(9)] for _ in range(9)]
-print('Here is the grid that has been generated:')
-display_grid()
+    for i in range(1,len(counter1)):
+        if counter1[i] != 0:
+            stairs.update({1:[]})
+    for i in range(0,len(counter1)):
+        if counter1[i] != 0:
+            stairs.setdefault(1).append((i+1,counter1[i]))  
+            print(i)
+    return stairs
 
-step_1=0
-
-for j in range(len(grid)):
-    for i in range(len(grid)):
-        if grid[j][i] !=0:
-            try:
-                if grid[j][i+1] != 0:
-                    if grid[j+1][i+1] !=0:
-                        if grid[j+1][i+2] not in [0,-1]:
-                            grid[j+1][i+2] = -1
-                            step_1 += 1
-                            print(j,i)
+def first_step(x):
+    for j in range(len(x)):
+        for i in range(len(x)):
+            try: 
+                if x[j][i] and x[j][i+1] and x[j+1][i+1] not in [0]:
+                    if x[j+1][i+2] not in [0,-1]:
+                            x[j+1][i+2] = -10
             except IndexError:
                 pass
-        else:
-            continue
-print(step_1)
-# here it ends
+    return x
 
-# Possibly define other functions
+def next_step(x):
+    for q in range(1,len(x)-1):
+        for j in range(len(x)):
+            for i in range(len(x)):
+                try:
+                    if x[j][i] in [-10**q] and x[j+1][i] and x[j+1][i+1] not in [0]:
+                        x[j][i]='h'
+                        x[j+1][i+1] = (-10**(q))*10
+                except IndexError:
+                    pass
+def count1(x):
+    for q in range(1,len(x)):
+        for j in range(len(x)):
+            for i in range(len(x)):
+                if x[j][i] in [-10**q]:
+                    counter1[q-1] +=1
+
+
+##########################
 
 try:
     arg_for_seed, density, dim = input('Enter three nonnegative integers: ').split()
