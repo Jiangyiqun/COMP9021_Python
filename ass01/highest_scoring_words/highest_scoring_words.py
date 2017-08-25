@@ -10,12 +10,11 @@ import sys
 # Input: a list such as ['a', 'b', 'c']
 # Output: a set such as {'ab', 'bac', 'b', 'c', 'acb', 'ca', 'bc', 'cb', 'cba', 'ba', 'bca', 'ac', 'cab', 'abc', 'a'}
 # Description:
-def CombineLetters(letters):
-    letters_combination = []
+def CombineLetters(letters, word_dictionary):
+    letters_combination =  set()
     for word_length in range (1, len(letters) + 1):         # generate different word length
-         for e in permutations(''.join(letters), word_length):
-             letters_combination.append(''.join(e))
-    return(set(letters_combination))
+        letters_combination |= set(''.join(e) for e in permutations(letters, word_length)) &  word_dictionary  # union all permutation()
+    return(letters_combination)
 
 # Function: FindHighestScoreWords
 # Dependency: ScoreWord
@@ -128,19 +127,15 @@ input_letters = UserInput()
 if debug_mode == 1:
     print('input_letters =', input_letters)
 
-letters_combination = CombineLetters(input_letters)
-if debug_mode == 2:
-    print('letters_combination =', letters_combination)
-
 word_dictionary = GenerateDict("wordsEn.txt")
 if debug_mode == 3:
     print('word_dictionary =', word_dictionary)
 
-word_set = letters_combination & word_dictionary
-if debug_mode == 4:
-    print('word_set =', word_set)
+letters_combination = CombineLetters(input_letters, word_dictionary)
+if debug_mode == 2:
+    print('letters_combination =', letters_combination)
 
-scored_word_set = ScoreWordSet(word_set)
+scored_word_set = ScoreWordSet(letters_combination)
 if debug_mode == 5:
     print('scored_word_set =', scored_word_set)
 

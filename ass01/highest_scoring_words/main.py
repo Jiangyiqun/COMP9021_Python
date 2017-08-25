@@ -16,19 +16,15 @@ input_letters = UserInput()
 if debug_mode == 1:
     print('input_letters =', input_letters)
 
-letters_combination = CombineLetters(input_letters)
-if debug_mode == 2:
-    print('letters_combination =', letters_combination)
-
 word_dictionary = GenerateDict("wordsEn.txt")
 if debug_mode == 3:
     print('word_dictionary =', word_dictionary)
 
-word_set = letters_combination & word_dictionary
-if debug_mode == 4:
-    print('word_set =', word_set)
+letters_combination = CombineLetters(input_letters, word_dictionary)
+if debug_mode == 2:
+    print('letters_combination =', letters_combination)
 
-scored_word_set = ScoreWordSet(word_set)
+scored_word_set = ScoreWordSet(letters_combination)
 if debug_mode == 5:
     print('scored_word_set =', scored_word_set)
 
