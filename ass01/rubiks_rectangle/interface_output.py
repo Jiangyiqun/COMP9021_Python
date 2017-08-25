@@ -3,10 +3,10 @@
 # output: print
 def interface_output(steps):
     if steps == 0 or steps == 1:
-        unit = 'step'
+        unit = 'step is'
     else:
-        unit = 'steps'
-    print(f'{steps} {unit} is needed to reach the final configuration.')
+        unit = 'steps are'
+    print(f'{steps} {unit} needed to reach the final configuration.')
     return
 
 

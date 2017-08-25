@@ -21,7 +21,7 @@ def interface_input():
     except ValueError:
         print('Incorrect configuration, giving up...')
         sys.exit()
-    return(final_configuration)
+    return(tuple(final_configuration))
 
 
 # test code
