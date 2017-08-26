@@ -1,21 +1,26 @@
-# Author:   Jack (z5129432) for COMP9021
-# Date:     
-# Description:
+""" template
+This code is written for COMP9021.
+    Author: Jack Jiang (z5129432)
+    Version: v01
+    Date: 2017
+"""
+import os
+import sys
 
 
+def template_function(
+        arg1, arg2,
+        arg3, arg4):
+    """ function
 
-
-# Function: 
-# Dependency: 
-# Input: 
-# Output: 
-# Description:
-def Function():
-
+    Arguements:
+    Returns:
+    """
     return
-
 
 
 # Test Codes
 if __name__ == "__main__":
-    Function()
+    template_function(
+        arg1, arg2,
+        arg3, arg4)

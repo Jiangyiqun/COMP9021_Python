@@ -9,7 +9,7 @@ def ScoreWord(word):
     score = int(0)
     for letter in word:
         score += ScoreLetter(letter)
-    return(score)
+    return score
 
 
 
