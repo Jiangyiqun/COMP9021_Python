@@ -4,7 +4,7 @@ def print_roll(roll):
     Returns: print roll, such as "The roll is: Ace Queen Jack Jack 10"
     """
     poker_roll_book = {
-        0: 'Arc',
+        0: 'Ace',
         1: 'King',
         2: 'Queen',
         3: 'Jack',

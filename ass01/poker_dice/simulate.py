@@ -31,13 +31,13 @@ Simulate the possibility of the various hands.
         hand_possibility[key] = 0
     for _ in range(times):
         hand_possibility[hand_rank(roll_dice())] += 1    # count times of a hand
-    print('Five of a kind  : {0:.2%}'.format(hand_possibility['Five of a kind']/times))
-    print('Four of a kind  : {0:.2%}'.format(hand_possibility['Four of a kind']/times))
-    print('Full house      : {0:.2%}'.format(hand_possibility['Full house']/times))
-    print('Straight        : {0:.2%}'.format(hand_possibility['Straight']/times))
-    print('Three of a kind : {0:.2%}'.format(hand_possibility['Three of a kind']/times))
-    print('Two pair        : {0:.2%}'.format(hand_possibility['Two pair']/times))
-    print('One pair        : {0:.2%}'.format(hand_possibility['One pair']/times))
+    print('Five of a kind : {0:.2%}'.format(hand_possibility['Five of a kind']/times))
+    print('Four of a kind : {0:.2%}'.format(hand_possibility['Four of a kind']/times))
+    print('Full house     : {0:.2%}'.format(hand_possibility['Full house']/times))
+    print('Straight       : {0:.2%}'.format(hand_possibility['Straight']/times))
+    print('Three of a kind: {0:.2%}'.format(hand_possibility['Three of a kind']/times))
+    print('Two pair       : {0:.2%}'.format(hand_possibility['Two pair']/times))
+    print('One pair       : {0:.2%}'.format(hand_possibility['One pair']/times))
     # print('Bust            : {0:.2%}'.format(hand_possibility['Bust']/times))
     return
 

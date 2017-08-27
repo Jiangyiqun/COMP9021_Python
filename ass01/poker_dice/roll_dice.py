@@ -10,6 +10,7 @@ Use to generate randonly roll, presented by digits.
     Dependency: random.randint
     """
     roll = [randint(0, 5) for _ in range(5 - len(kept_dice))]
+    roll.extend(kept_dice)
     roll.sort()
     return roll
 
@@ -18,4 +19,4 @@ Use to generate randonly roll, presented by digits.
 if __name__ == "__main__":
     kept_dice = [1, 2]
     seed()
-    print(roll_dice())
+    print(roll_dice(kept_dice))
