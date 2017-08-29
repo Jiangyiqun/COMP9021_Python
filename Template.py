@@ -8,9 +8,7 @@ import os
 import sys
 
 
-def template_function(
-        arg1, arg2,
-        arg3, arg4):
+def template_function():
     """ function
 
     Arguements:
@@ -21,6 +19,4 @@ def template_function(
 
 # Test Codes
 if __name__ == "__main__":
-    template_function(
-        arg1, arg2,
-        arg3, arg4)
+    pass
