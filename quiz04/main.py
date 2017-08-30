@@ -67,7 +67,7 @@ agricultural = get_valid_data(agricultural_land_filename, year_1, year_2)
 forest = get_valid_data(forest_filename, year_1, year_2)
 country_with_ratio = get_ratio(agricultural, forest)
 counry_sorted_by_ratio = sort_ratio(country_with_ratio)
-countries = get_top_n_countries(country_with_ratio, top_n)
+countries = get_top_n_countries(counry_sorted_by_ratio, top_n)
 
 
 ############################### Jack's code ends here ###############################
