@@ -2,7 +2,7 @@ import csv
 from collections import defaultdict
 
 def get_valid_data(csv_file_name, year_1, year_2):
-    """ function
+    """ get_valid_data
 Read and handle csv files.
     Arguements: a string of csv file name, such as 'API_AG.LND.AGRI.K2_DS2_en_csv_v2.csv'
     Returns: a dictionary with counries' names and their increase of amount
