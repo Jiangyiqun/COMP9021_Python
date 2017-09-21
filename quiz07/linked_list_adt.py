@@ -338,7 +338,7 @@ class LinkedList:
         >>> L.print()
         0, 1
         >>> L = LinkedList([0])
-        >>> L.insert_value_at(1, 2)
+        >>> L.insert_value_at(1, 2))
         >>> L.print()
         0, 1
         >>> L = LinkedList([0, 2])
@@ -492,3 +492,5 @@ class LinkedList:
 if __name__ == '__main__':
     import doctest
     doctest.testmod()    
+    LL = LinkedList([27, 12, 24, 28, 13])
+    print(LL.value_at(5))
