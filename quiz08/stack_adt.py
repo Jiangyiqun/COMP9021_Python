@@ -14,7 +14,7 @@ class EmptyStackError(Exception):
 class Stack:
     def __init__(self):
         self._data = []
-        
+
     def __len__(self):
         return len(self._data)
 
@@ -47,6 +47,4 @@ class Stack:
         if self.is_empty():
             raise EmptyStackError('Cannot pop from top of empty stack')
         return self._data.pop()
-
     
-        

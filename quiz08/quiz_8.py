@@ -16,6 +16,7 @@ from random import seed, randrange
 
 from stack_adt import *
 from forewards import *
+from backwards import *
 
 
 def display_grid():
@@ -24,18 +25,18 @@ def display_grid():
 
 
 def explore_depth_first(x, y, target):
-    '''
-    try test case: 0 10 3 3 20
-    '''
     path = Stack()
     path.push((x, y))
     current_sum = grid[x][y]
     if current_sum == target:
         return path._data
-    while current_sum != target:
+    while (not current_sum == target) and (not path.is_empty()):
         (return_x, return_y) = forewards(grid, target, path, current_sum)
         if (return_x, return_y) == path.peek():
-            return []
+            # when no way to go, backwards, until generate new direction
+            need_backwards, current_sum = backwards(grid, target, path, current_sum)
+            while need_backwards:
+                need_backwards, current_sum = backwards(grid, target, path, current_sum)
         else:
             current_sum += grid[return_x][return_y]
             path.push((return_x, return_y))
@@ -51,7 +52,6 @@ except ValueError:
     sys.exit()
 seed(for_seed)
 grid = [[randrange(bound) for _ in range(10)] for _ in range(10)]
-# print(grid)
 print('Here is the grid that has been generated:')
 display_grid()
 path = explore_depth_first(x, y, target)
