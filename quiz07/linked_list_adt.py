@@ -491,6 +491,9 @@ class LinkedList:
             
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()    
-    LL = LinkedList([27, 12, 24, 28, 13])
-    print(LL.value_at(5))
+
+    L = LinkedList([0, 32, 1, 32, 2, 32, 3, 32])
+    L.delete_value(32)
+    L.print()
+    L.delete_value(32)
+    L.print()
