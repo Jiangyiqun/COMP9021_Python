@@ -19,12 +19,13 @@ from priority_queue_adt import *
 from itertools import permutations
 
 # Possibly define some functions
-
+    
 def preferred_sequence():
     all_possible_sequences = []
     for t in permutations(L):
         all_possible_sequences.append(t)
     all_possible_sequences.sort()
+
 
     for preferred_sequence in all_possible_sequences:
         pq_generated_by_preferred_sequence = PriorityQueue()
@@ -32,7 +33,7 @@ def preferred_sequence():
             pq_generated_by_preferred_sequence.insert(e)
         if pq_generated_by_preferred_sequence._data == pq._data:
             return list(preferred_sequence)
-
+    
     # Replace pass above with your code (altogether, aim for around 24 lines of code)
 
 
@@ -45,7 +46,7 @@ try:
         raise ValueError
 except ValueError:
     print('Incorrect input (not all integers), giving up.')
-    sys.exit()
+    sys.exit()    
 seed(for_seed)
 L = sample(list(range(length * 10)), length)
 # print('L = ', L)
