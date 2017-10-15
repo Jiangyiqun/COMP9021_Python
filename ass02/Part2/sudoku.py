@@ -1,5 +1,7 @@
 from sys import exit
 from copy import deepcopy
+from itertools import combinations
+
 
 
 class SudokuError(Exception):
@@ -409,7 +411,7 @@ class Sudoku():
         self._remove_singletons_box()
         self._remove_singletons_row()
         self._remove_singletons_column()
-
+        self._remove_preemptive_row()
 
     def _remove_singletons_row(self):
         # scan for each empty cell
@@ -427,7 +429,7 @@ class Sudoku():
                         if e not in other_cell_same_row:
                             self.worded_matrix[i][j] = set([e])
                             self.flag_not_finish = True
-                            break
+                            return
 
 
     def _remove_singletons_column(self):
@@ -446,7 +448,7 @@ class Sudoku():
                         if e not in other_cell_same_column:
                             self.worded_matrix[i][j] = set([e])
                             self.flag_not_finish = True
-                            break
+                            return
 
 
     def _remove_singletons_box(self):
@@ -466,8 +468,38 @@ class Sudoku():
                         if e not in other_cell_same_box:
                             self.worded_matrix[i][j] = set([e])
                             self.flag_not_finish = True
-                            break
+                            return
 
+
+    def _remove_preemptive_row(self):
+        for row in self.worded_matrix:
+            # calculate the max size of preemptive set
+            max_size_of_preemptive_set = 9 - 2
+            for cell in row:
+                if len(cell) == 1:
+                    max_size_of_preemptive_set -= 1
+            # try to find preemtive set
+            for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
+                # generate the index of preemptive set
+                candidate_index = set()
+                for j in range(9):
+                    if len(row[j]) > 1 and len(row[j]) <= size_of_preemptive_set:
+                        candidate_index.add(j)
+                # generate combination of index
+                combination_of_candidate_index = combinations(candidate_index, size_of_preemptive_set)
+                for set_of_candidate_index in combination_of_candidate_index:
+                    preemptive_set = set()
+                    for index_of_candidate in set_of_candidate_index:
+                        preemptive_set |= row[index_of_candidate]
+                    if len(preemptive_set) == size_of_preemptive_set:
+                        # print(set_of_candidate_index)
+                        # print(preemptive_set)
+                        # find a preemptive set, cross related numbers in other cells
+                        set_of_other_index = set([0, 1, 2, 3, 4, 5, 6, 7, 8]) - set(set_of_candidate_index)
+                        for index_of_other in set_of_other_index:
+                            row[index_of_other] &= preemptive_set
+                            self.flag_not_finish = True
+                        return
 
 
 
