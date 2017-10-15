@@ -1,8 +1,9 @@
 # Fdb version 3
-["pdflatex"] 1507988899 "/home/z5129432/Github/COMP9021_Python/ass02/Try_latex/sudoku_3_bare.tex" "sudoku_3_bare.pdf" "sudoku_3_bare" 1507988901
+["pdflatex"] 1508048339 "/home/z5129432/Github/COMP9021_Python/ass02/Try_latex/sudoku_3_marked.tex" "sudoku_3_marked.pdf" "sudoku_3_marked" 1508048341
   "/etc/texmf/web2c/texmf.cnf" 1506757119 1101 af7716885e081ab43982cab7b4672c1a ""
-  "/home/z5129432/Github/COMP9021_Python/ass02/Try_latex/sudoku_3_bare.tex" 1507988898 2108 b0d62fd6ecb6522887c3aef48c464d53 ""
+  "/home/z5129432/Github/COMP9021_Python/ass02/Try_latex/sudoku_3_marked.tex" 1505187533 2251 c3131730c9738935019c921a91bf298d ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb" 1248133631 31809 8670ca339bf94e56da1fc21c80635e2a ""
   "/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii" 1337017135 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty" 1284331290 1458 43ab4710dc82f3edeabecd0d099626b2 ""
   "/usr/share/texlive/texmf-dist/tex/generic/oberdiek/etexcmds.sty" 1335995445 7612 c47308d923ec19888707b0f1792b326a ""
@@ -96,9 +97,9 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1503343927 31343 93828589fb0cea665e553ee5a17ad2d4 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1506757172 1863403 f3ff9a4253bcb5fb9a9baaf0c572cb01 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1506757257 3883867 20851280eda376d8c8e6f93aeabce312 ""
-  "sudoku_3_bare.aux" 1507988901 8 a94a2480d3289e625eea47cd1b285758 ""
-  "sudoku_3_bare.tex" 1507988898 2108 b0d62fd6ecb6522887c3aef48c464d53 ""
+  "sudoku_3_marked.aux" 1508048341 8 a94a2480d3289e625eea47cd1b285758 ""
+  "sudoku_3_marked.tex" 1505187533 2251 c3131730c9738935019c921a91bf298d ""
   (generated)
-  "sudoku_3_bare.log"
-  "sudoku_3_bare.pdf"
-  "sudoku_3_bare.aux"
+  "sudoku_3_marked.aux"
+  "sudoku_3_marked.pdf"
+  "sudoku_3_marked.log"

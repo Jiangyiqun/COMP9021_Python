@@ -1,4 +1,6 @@
 from sys import exit
+from copy import deepcopy
+
 
 class SudokuError(Exception):
     def __init__(self, message):
@@ -9,6 +11,26 @@ class Sudoku():
     def __init__(self, filename):
         self.matrix = []
         self.filename = filename
+        self.latex_prefix = [
+                r'\documentclass[10pt]{article}',
+                r'\usepackage[left=0pt,right=0pt]{geometry}',
+                r'\usepackage{tikz}',
+                r'\usetikzlibrary{positioning}',
+                r'\usepackage{cancel}',
+                r'\pagestyle{empty}',
+                r'',
+                r'\newcommand{\N}[5]{\tikz{\node[label=above left:{\tiny #1},',
+                r'                               label=above right:{\tiny #2},',
+                r'                               label=below left:{\tiny #3},',
+                r'                               label=below right:{\tiny #4}]{#5};}}',
+                '',
+                r'\begin{document}',
+                '',
+                r'\tikzset{every node/.style={minimum size=.5cm}}',
+                '',
+                r'\begin{center}',
+                r'\begin{tabular}{||@{}c@{}|@{}c@{}|@{}c@{}||@{}c@{}|@{}c@{}|@{}c@{}||@{}c@{}|@{}c@{}|@{}c@{}||}\hline\hline',
+                ]
         #   check the validity of input, and generate matrix
         with open(filename) as input_file:
             for line in input_file:
@@ -38,6 +60,95 @@ class Sudoku():
             # print('check the length of column is 9')
             raise SudokuError('Incorrect input')
             sys.exit()
+        # initialize marked matrix
+        self.marked_matrix = [[0 for j in range(9)] for j in range(9)]
+        self._mark_matrix()
+        # re_generate marked matrix untill nothing to generate
+        while(self._remark_matrix_by_forced_digits()):
+            self._remark_matrix()
+        # sort marked matrix
+        for row in self.marked_matrix:
+            for cell in row:
+                cell.sort()
+
+
+
+    def _mark_matrix(self):
+        for i in range(9):
+            for j in range(9):
+                if self.matrix[i][j] == 0:
+                    # row set
+                    set_row = set(self.matrix[i])
+                    # column set
+                    set_column = set()
+                    for _ in range(9):
+                        set_column.add(self.matrix[_][j])
+                    # box set
+                    set_box = set()
+                    for box_i in range(i // 3 *3, i // 3 *3 + 3):
+                        for box_j in range(j // 3 *3, j // 3 *3 + 3):
+                            set_box.add(self.matrix[box_i][box_j])
+                    # generate cell: {1, 2, 3, 4, 5, 6, 7, 8 ,9} - row - column - box
+                    set_cell = set([1, 2, 3, 4, 5, 6, 7, 8 ,9]) - set_row - set_column - set_box
+                    self.marked_matrix[i][j] = list(set_cell)
+                else:
+                    self.marked_matrix[i][j] = list([self.matrix[i][j]])
+
+
+
+    def _remark_matrix_by_forced_digits(self):
+        having_changed = False
+        # scan for each empty cell
+        for i in range(9):
+            for j in range(9):
+                if len(self.marked_matrix[i][j]) > 1:
+                    # pick an cadidate value e from the cell
+                    for e in self.marked_matrix[i][j]:
+                        # generate a set contains values in other cells of the same box
+                        other_cell_same_box = set()
+                        for box_i in range(i // 3 *3, i // 3 *3 + 3):
+                            for box_j in range(j // 3 *3, j // 3 *3 + 3):
+                                if box_i != i or box_j != j:    # other cell
+                                    other_cell_same_box |= set(self.marked_matrix[box_i][box_j])
+                        # find whether e is unique in its box
+                        if e not in other_cell_same_box:
+                            self.marked_matrix[i][j] = [e]
+                            having_changed = True
+                            break
+        return having_changed
+
+
+
+    def _remark_matrix(self):
+        copied_marked_matrix = deepcopy(self.marked_matrix)
+        for i in range(9):
+            for j in range(9):
+                if len(copied_marked_matrix[i][j]) > 1:
+                    # row set
+                    set_row = set()
+                    for cell in copied_marked_matrix[i]:
+                        if len(cell) == 1:
+                            set_row.add(cell[0])
+                    # column set
+                    set_column = set()
+                    for _ in range(9):
+                        if len(copied_marked_matrix[_][j]) == 1:
+                            set_column.add(copied_marked_matrix[_][j][0])
+                    # box set
+                    set_box = set()
+                    for box_i in range(i // 3 *3, i // 3 *3 + 3):
+                        for box_j in range(j // 3 *3, j // 3 *3 + 3):
+                            if len(copied_marked_matrix[box_i][box_j]) == 1:
+                                set_box.add(copied_marked_matrix[box_i][box_j][0])
+                    # generate cell: {1, 2, 3, 4, 5, 6, 7, 8 ,9} - row - column - box
+                    set_cell = set([1, 2, 3, 4, 5, 6, 7, 8 ,9]) - set_row - set_column - set_box
+                    # print("set_row=", set_row)
+                    # print("set_column=", set_column)
+                    # print("set_box=", set_box)
+                    # print("set_cell=", set_cell)
+                    self.marked_matrix[i][j] = list(set_cell)
+
+
 
 
     def preassess(self):
@@ -51,7 +162,6 @@ class Sudoku():
                         return
                     else:
                         existed_number.add(e)
-
         # check numbers in each column is unique
         for j in range(9):
             existed_number = {0}
@@ -85,27 +195,8 @@ class Sudoku():
         print('There might be a solution.')
 
 
+
     def bare_tex_output(self):
-        latex_prefix = [
-                r'\documentclass[10pt]{article}',
-                r'\usepackage[left=0pt,right=0pt]{geometry}',
-                r'\usepackage{tikz}',
-                r'\usetikzlibrary{positioning}',
-                r'\usepackage{cancel}',
-                r'\pagestyle{empty}',
-                r'',
-                r'\newcommand{\N}[5]{\tikz{\node[label=above left:{\tiny #1},',
-                r'                               label=above right:{\tiny #2},',
-                r'                               label=below left:{\tiny #3},',
-                r'                               label=below right:{\tiny #4}]{#5};}}',
-                '',
-                r'\begin{document}',
-                '',
-                r'\tikzset{every node/.style={minimum size=.5cm}}',
-                '',
-                r'\begin{center}',
-                r'\begin{tabular}{||@{}c@{}|@{}c@{}|@{}c@{}||@{}c@{}|@{}c@{}|@{}c@{}||@{}c@{}|@{}c@{}|@{}c@{}||}\hline\hline',
-                ]
         # generate latex file name
         latex_bare_filename = ""
         for s in self.filename:
@@ -127,7 +218,7 @@ class Sudoku():
                         row_string.append(str(e))
                 matrix_string.append(row_string)
             # write latex file
-            for line in latex_prefix:
+            for line in self.latex_prefix:
                 output_file.write(line + "\n")
             for i in range(9):
                 output_file.write(r"% Line " + str(i+1) + "\n")
@@ -156,15 +247,231 @@ class Sudoku():
                                         + r"\end{document}" + "\n"
                                         )
 
+
+
     def forced_tex_output(self):
-        pass
+        # generate latex file name
+        latex_forced_filename = ""
+        for s in self.filename:
+            if s != ".":
+                latex_forced_filename += s
+            else:
+                break
+        latex_forced_filename += "_forced.tex"
+        # create and handle latex file
+        with open(latex_forced_filename, "w+") as output_file:
+            # convert marked_matrix to matrix_string, where every none zero value is string, and zero value is empty string
+            matrix_string = []
+            for row in self.marked_matrix:
+                row_string = []
+                for cell in row:
+                    if len(cell) == 1:
+                        row_string.append(str(cell[0]))
+                    else:
+                        row_string.append('')
+                matrix_string.append(row_string)
+                # print(matrix_string)
+            # write latex file
+            for line in self.latex_prefix:
+                output_file.write(line + "\n")
+            for i in range(9):
+                output_file.write(r"% Line " + str(i+1) + "\n")
+                output_file.write(r"\N{}{}{}{}{" + matrix_string[i][0]
+                                  + r"} & \N{}{}{}{}{" + matrix_string[i][1]
+                                  + r"} & \N{}{}{}{}{" + matrix_string[i][2]
+                                  + r"} &" + "\n"
+                                  + r"\N{}{}{}{}{" + matrix_string[i][3]
+                                  + r"} & \N{}{}{}{}{" + matrix_string[i][4]
+                                  + r"} & \N{}{}{}{}{" + matrix_string[i][5]
+                                  + r"} &" + "\n"
+                                  + r"\N{}{}{}{}{" + matrix_string[i][6]
+                                  + r"} & \N{}{}{}{}{" + matrix_string[i][7]
+                                  + r"} & \N{}{}{}{}{" + matrix_string[i][8]
+                                  + r"}"
+                                  )
+                if i+1 in (1, 2, 4 ,5 ,7 ,8):
+                    output_file.write(r" \\ \hline" + "\n" + "\n")
+                if i+1 in (3, 6):
+                    output_file.write(r" \\ \hline\hline" + "\n" + "\n")
+                if i+1 == 9:
+                    output_file.write(r" \\ \hline\hline" + "\n"
+                                        + r"\end{tabular}"  + "\n"
+                                        + r"\end{center}" + "\n"
+                                        + "\n"
+                                        + r"\end{document}" + "\n"
+                                        )
+
 
 
     def marked_tex_output(self):
-        pass
+        # generate latex file name
+        latex_marked_filename = ""
+        for s in self.filename:
+            if s != ".":
+                latex_marked_filename += s
+            else:
+                break
+        latex_marked_filename += "_marked.tex"
+        # create and handle latex file
+        with open(latex_marked_filename, "w+") as output_file:
+            # convert marked_matrix to matrix_string
+            matrix_string = []
+            for row in self.marked_matrix:
+                row_string = []
+                for cell in row:
+                    cell_string = ""
+                    if len(cell) == 1:
+                        cell_string = "{}{}{}{}{" + str(cell[0]) + "}"
+                    else:
+                        # top left
+                        cell_string += "{"
+                        if 1 in cell and 2 not in cell:
+                            cell_string += "1"
+                        if 1 not in cell and 2 in cell:
+                            cell_string += "2"
+                        if 1 in cell and 2 in cell:
+                            cell_string += "1 2"
+                        cell_string += "}{"
+                        # top right
+                        if 3 in cell and 4 not in cell:
+                            cell_string += "3"
+                        if 3 not in cell and 4 in cell:
+                            cell_string += "4"
+                        if 3 in cell and 4 in cell:
+                            cell_string += "3 4"
+                        cell_string += "}{"
+                        # bottom left
+                        if 5 in cell and 6 not in cell:
+                            cell_string += "5"
+                        if 5 not in cell and 6 in cell:
+                            cell_string += "6"
+                        if 5 in cell and 6 in cell:
+                            cell_string += "5 6"
+                        cell_string += "}{"
+                        # bottom right
+                        if 7 in cell and 8 not in cell and 9 not in cell:
+                            cell_string += "7"
+                        if 7 not in cell and 8 in cell and 9 not in cell:
+                            cell_string += "8"
+                        if 7 not in cell and 8 not in cell and 9 in cell:
+                            cell_string += "9"
+                        if 7 in cell and 8 in cell and 9 not in cell:
+                            cell_string += "7 8"
+                        if 7 in cell and 8 not in cell and 9 in cell:
+                            cell_string += "7 9"
+                        if 7 not in cell and 8 in cell and 9 in cell:
+                            cell_string += "8 9"
+                        if 7 in cell and 8 in cell and 9 in cell:
+                            cell_string += "7 8 9"
+                        cell_string += r"}{}"
+                    row_string.append(cell_string)
+                matrix_string.append(row_string)
+            # write latex file
+            for line in self.latex_prefix:
+                output_file.write(line + "\n")
+            for i in range(9):
+                output_file.write(r"% Line " + str(i+1) + "\n")
+                output_file.write(r"\N" + matrix_string[i][0]
+                                + r" & \N" + matrix_string[i][1]
+                                + r" & \N" + matrix_string[i][2]
+                                + r" &" + "\n"
+                                + r"\N" + matrix_string[i][3]
+                                + r" & \N" + matrix_string[i][4]
+                                + r" & \N" + matrix_string[i][5]
+                                + r" &" + "\n"
+                                + r"\N" + matrix_string[i][6]
+                                + r" & \N" + matrix_string[i][7]
+                                + r" & \N" + matrix_string[i][8]
+                                )
+                if i+1 in (1, 2, 4 ,5 ,7 ,8):
+                    output_file.write(r" \\ \hline" + "\n" + "\n")
+                if i+1 in (3, 6):
+                    output_file.write(r" \\ \hline\hline" + "\n" + "\n")
+                if i+1 == 9:
+                    output_file.write(r" \\ \hline\hline" + "\n"
+                                        + r"\end{tabular}"  + "\n"
+                                        + r"\end{center}" + "\n"
+                                        + "\n"
+                                        + r"\end{document}" + "\n"
+                                        )
+
+
 
     def worked_tex_output(self):
-        pass
+        self.flag_not_finish = False
+        # generate worked_matrix in which cells are represented by set
+        self.worded_matrix = []
+        for row in self.marked_matrix:
+            worded_row = []
+            for cell in row:
+                worded_row.append(set(cell))
+            self.worded_matrix.append(worded_row)
+        self._remove_singletons_box()
+        self._remove_singletons_row()
+        self._remove_singletons_column()
+
+
+    def _remove_singletons_row(self):
+        # scan for each empty cell
+        for i in range(9):
+            for j in range(9):
+                if len(self.worded_matrix[i][j]) > 1:
+                    # pick an cadidate value e from the cell
+                    for e in self.worded_matrix[i][j]:
+                        # generate a set contains values in other cells of the same box
+                        other_cell_same_row = set()
+                        for row_j in range(9):
+                            if row_j != j:    # other cell
+                                other_cell_same_row |= self.worded_matrix[i][row_j]
+                        # find whether e is unique in its box
+                        if e not in other_cell_same_row:
+                            self.worded_matrix[i][j] = set([e])
+                            self.flag_not_finish = True
+                            break
+
+
+    def _remove_singletons_column(self):
+        # scan for each empty cell
+        for i in range(9):
+            for j in range(9):
+                if len(self.worded_matrix[i][j]) > 1:
+                    # pick an cadidate value e from the cell
+                    for e in self.worded_matrix[i][j]:
+                        # generate a set contains values in other cells of the same box
+                        other_cell_same_column = set()
+                        for column_i in range(9):
+                            if column_i != i:    # other cell
+                                other_cell_same_column |= self.worded_matrix[column_i][j]
+                        # find whether e is unique in its box
+                        if e not in other_cell_same_column:
+                            self.worded_matrix[i][j] = set([e])
+                            self.flag_not_finish = True
+                            break
+
+
+    def _remove_singletons_box(self):
+        # scan for each empty cell
+        for i in range(9):
+            for j in range(9):
+                if len(self.worded_matrix[i][j]) > 1:
+                    # pick an cadidate value e from the cell
+                    for e in self.worded_matrix[i][j]:
+                        # generate a set contains values in other cells of the same box
+                        other_cell_same_box = set()
+                        for box_i in range(i // 3 *3, i // 3 *3 + 3):
+                            for box_j in range(j // 3 *3, j // 3 *3 + 3):
+                                if box_i != i or box_j != j:    # other cell
+                                    other_cell_same_box |= self.worded_matrix[box_i][box_j]
+                        # find whether e is unique in its box
+                        if e not in other_cell_same_box:
+                            self.worded_matrix[i][j] = set([e])
+                            self.flag_not_finish = True
+                            break
+
+
+
+
+
 
 if __name__ == '__main__':
     def print_matrix(matrix):
@@ -172,6 +479,6 @@ if __name__ == '__main__':
             print(line, end='\n')
 
 
-    sudoku = Sudoku('sudoku_4.txt')
-    sudoku.bare_tex_output()
-    # print_matrix(sudoku.matrix)
+    sudoku = Sudoku('sudoku_5.txt')
+    sudoku.worked_tex_output()
+    print_matrix(sudoku.worded_matrix)
