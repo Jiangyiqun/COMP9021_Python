@@ -400,7 +400,8 @@ class Sudoku():
 
 
     def worked_tex_output(self):
-        self.flag_not_finish = False
+        self.flag_not_finish = True
+        self._debug = True
         # generate worked_matrix in which cells are represented by set
         self.worded_matrix = []
         for row in self.marked_matrix:
@@ -408,10 +409,17 @@ class Sudoku():
             for cell in row:
                 worded_row.append(set(cell))
             self.worded_matrix.append(worded_row)
-        self._remove_singletons_box()
-        self._remove_singletons_row()
-        self._remove_singletons_column()
-        self._remove_preemptive_row()
+        for i in range(5):
+            self.flag_not_finish = False
+            # self._remove_singletons_box()
+            # self._remove_singletons_row()
+            # self._remove_singletons_column()
+            # self._remove_preemptive_row()
+            self._remove_preemptive_column()
+            # self._remark_worded_matrix()
+            # self._remove_preemptive_box()
+            # print(self.flag_not_finish)
+        
 
     def _remove_singletons_row(self):
         # scan for each empty cell
@@ -428,6 +436,9 @@ class Sudoku():
                         # find whether e is unique in its box
                         if e not in other_cell_same_row:
                             self.worded_matrix[i][j] = set([e])
+                            if self._debug:
+                                print('remove a singletons row on: ', i, j)
+                            self._remark_worded_matrix()
                             self.flag_not_finish = True
                             return
 
@@ -447,6 +458,9 @@ class Sudoku():
                         # find whether e is unique in its box
                         if e not in other_cell_same_column:
                             self.worded_matrix[i][j] = set([e])
+                            if self._debug:
+                                print('remove a singletons column on: ', i, j)
+                            self._remark_worded_matrix()
                             self.flag_not_finish = True
                             return
 
@@ -467,6 +481,9 @@ class Sudoku():
                         # find whether e is unique in its box
                         if e not in other_cell_same_box:
                             self.worded_matrix[i][j] = set([e])
+                            if self._debug:
+                                print('remove a singletons box on: ', i, j)
+                            self._remark_worded_matrix()
                             self.flag_not_finish = True
                             return
 
@@ -492,17 +509,127 @@ class Sudoku():
                     for index_of_candidate in set_of_candidate_index:
                         preemptive_set |= row[index_of_candidate]
                     if len(preemptive_set) == size_of_preemptive_set:
-                        # print(set_of_candidate_index)
-                        # print(preemptive_set)
                         # find a preemptive set, cross related numbers in other cells
                         set_of_other_index = set([0, 1, 2, 3, 4, 5, 6, 7, 8]) - set(set_of_candidate_index)
                         for index_of_other in set_of_other_index:
-                            row[index_of_other] &= preemptive_set
-                            self.flag_not_finish = True
+                            row[index_of_other] -= preemptive_set
+                        if self._debug:
+                                print('find a preemptive row on: ', index_of_candidate)
+                        # self._remark_worded_matrix()
+                        self.flag_not_finish = True
                         return
 
 
+    def _remove_preemptive_column(self):
+        for j in range(9):
+            # calculate the max size of preemptive set
+            max_size_of_preemptive_set = 9 - 2
+            for i in range(9):
+                if len(self.worded_matrix[i][j]) == 1:
+                    max_size_of_preemptive_set -= 1
+            # try to find preemtive set
+            for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
+                # generate the index of preemptive set
+                candidate_index = set()
+                for i in range(9):
+                    if len(self.worded_matrix[i][j]) > 1 \
+                            and len(self.worded_matrix[i][j]) <= size_of_preemptive_set:
+                        candidate_index.add(i)
+                # generate combination of index
+                combination_of_candidate_index = combinations(candidate_index, size_of_preemptive_set)
+                for set_of_candidate_index in combination_of_candidate_index:
+                    preemptive_set = set()
+                    for index_of_candidate in set_of_candidate_index:
+                        preemptive_set |= self.worded_matrix[index_of_candidate][j]
+                    if len(preemptive_set) == size_of_preemptive_set:
+                        # find a preemptive set, cross related numbers in other cells
+                        set_of_other_index = set([0, 1, 2, 3, 4, 5, 6, 7, 8]) - set(set_of_candidate_index)
+                        for index_of_other in set_of_other_index:
+                            # print('before', self.worded_matrix[index_of_other][j])
+                            self.worded_matrix[index_of_other][j] -= preemptive_set
+                            # print('after', self.worded_matrix[index_of_other][j])
+                            # print('after remonve column')
+                            # print(self.worded_matrix)
+                        if self._debug:
+                            print('find a preemptive column on: ', index_of_candidate)
+                        # self._remark_worded_matrix()
+                        self.flag_not_finish = True
+                        return
 
+
+    def _remove_preemptive_box(self):
+        for no_of_box in range(9):
+            # for no_of_box 0, 1, 2, i is in range(0, 3)
+            # for no_of_box 3, 4, 5, i is in range(3, 6)
+            # for no_of_box 6, 7, 8, i is in range(6, 9)
+            # for no_of_box 0, 3, 6, j is in range(0, 3)
+            # for no_of_box 1, 4, 6, j is in range(3, 6)
+            # for no_of_box 2, 5, 8, j is in range(6, 9)
+            # therefore:
+            #   i in range(no_of_box // 3 * 3, no_of_box // 3 * 3 + 3)
+            #   j in range(no_of_box % 3 * 3, no_of_box % 3 * 3 + 3)
+            #
+            # calculate the max size of preemptive set and complete_set_of index
+            max_size_of_preemptive_set = 9 - 2
+            complete_set_of_index = set()
+            for i in range(no_of_box // 3 * 3, no_of_box // 3 * 3 + 3):
+                for j in range(no_of_box % 3 * 3, no_of_box % 3 * 3 + 3):
+                    complete_set_of_index.add((i, j))
+                    if len(self.worded_matrix[i][j]) == 1:
+                        max_size_of_preemptive_set -= 1
+            # try to find preemtive set
+            for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
+                # generate the index pair of preemptive set
+                candidate_index = set()
+                for i in range(no_of_box // 3 * 3, no_of_box // 3 * 3 + 3):
+                    for j in range(no_of_box % 3 * 3, no_of_box % 3 * 3 + 3):
+                        if len(self.worded_matrix[i][j]) > 1 \
+                                and len(self.worded_matrix[i][j]) <= size_of_preemptive_set:
+                            candidate_index.add((i, j))
+                # generate combination of index
+                combination_of_candidate_index = combinations(candidate_index, size_of_preemptive_set)
+                for set_of_candidate_index in combination_of_candidate_index:
+                    preemptive_set = set()
+                    for index_of_candidate in set_of_candidate_index:
+                        preemptive_set |= self.worded_matrix[index_of_candidate[0]][index_of_candidate[1]]
+                    if len(preemptive_set) == size_of_preemptive_set:
+                        # find a preemptive set, cross related numbers in other cells
+                        set_of_other_index = complete_set_of_index - set(set_of_candidate_index)
+                        # print(preemptive_set)
+                        for index_of_other in set_of_other_index:
+                            # print('before: ', self.worded_matrix[index_of_other[0]][index_of_other[1]])
+                            self.worded_matrix[index_of_other[0]][index_of_other[1]] -= preemptive_set
+                            # print('after: ', self.worded_matrix[index_of_other[0]][index_of_other[1]])
+                        if self._debug:
+                            print('find a preemptive box on: ', set_of_candidate_index)
+                        # self._remark_worded_matrix()
+                        self.flag_not_finish = True
+                        return
+
+
+    def _remark_worded_matrix(self):
+        copied_matrix = deepcopy(self.worded_matrix)
+        for i in range(9):
+            for j in range(9):
+                if len(copied_matrix[i][j]) > 1:
+                    # row set
+                    set_row = set()
+                    for cell in copied_matrix[i]:
+                        if len(cell) == 1:
+                            set_row |= cell
+                    # column set
+                    set_column = set()
+                    for _ in range(9):
+                        if len(copied_matrix[_][j]) == 1:
+                            set_column |= copied_matrix[_][j]
+                    # box set
+                    set_box = set()
+                    for box_i in range(i // 3 *3, i // 3 *3 + 3):
+                        for box_j in range(j // 3 *3, j // 3 *3 + 3):
+                            if len(copied_matrix[box_i][box_j]) == 1:
+                                set_box |= copied_matrix[box_i][box_j]
+                    # generate cell: {1, 2, 3, 4, 5, 6, 7, 8 ,9} - row - column - box
+                    self.worded_matrix[i][j] = set([1, 2, 3, 4, 5, 6, 7, 8 ,9]) - set_row - set_column - set_box
 
 
 if __name__ == '__main__':
@@ -511,6 +638,8 @@ if __name__ == '__main__':
             print(line, end='\n')
 
 
-    sudoku = Sudoku('sudoku_5.txt')
+    sudoku = Sudoku('sudoku_4.txt')
     sudoku.worked_tex_output()
-    print_matrix(sudoku.worded_matrix)
+    # print_matrix(sudoku.marked_matrix)
+    print()
+    print(sudoku.worded_matrix)
