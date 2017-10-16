@@ -1,14 +1,19 @@
-Enter 2 nonnegative integers, the second one no greater than 100: 0 5
-L = : [24, 48, 26, 2, 16]
-The heap that has been generated is:
-[None, 48, 24, 26, 2, 16]
+# Solving quiz 10 by pen and paper
+### List
+[None, 65, 53, 62, 33, 49, 5, 51]\
+### Tree:
+```
+            65
+        53      62
+      33  49  5   51
+```
+### Sort the list:
+[65, 62, 53, 51, 49, 33, 5]\
+### Examin whether 65 can be inserted as the last number
+- delete 65 a
+- 
+preferred_sequence
+\
 
-                48
-            24      26
-         2      16
-
-
-         97
-     61     65
- 49   51  53   62
-5  38 33
+If 24 can be the last inserted number?\
+-

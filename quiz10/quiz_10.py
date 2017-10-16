@@ -16,23 +16,42 @@ import sys
 from random import seed, sample
 
 from priority_queue_adt import *
-from itertools import permutations
 
 # Possibly define some functions
+def delete_node(n):
+    # find the index corresponse to number n
+    for i in range(1, pq._length + 1):
+        if pq._data[i] == n:
+            break
+    pq._data[i], pq._data[pq._length] = pq._data[pq._length], pq._data[i]
+    pq._length -= 1
+    # When the priority queue is one quarter full, we reduce its size to make it half full,
+    # provided that it would not reduce its capacity to less than the minimum required.
+    if pq.min_capacity // 2 <= pq._length <= len(pq._data) // 4:
+        pq._resize(len(pq._data) // 2)
+    pq._bubble_down(i)
+    return n
+
 
 def preferred_sequence():
-    all_possible_sequences = []
-    for t in permutations(L):
-        all_possible_sequences.append(t)
-    all_possible_sequences.sort()
-
-    for preferred_sequence in all_possible_sequences:
-        pq_generated_by_preferred_sequence = PriorityQueue()
-        for e in preferred_sequence:
-            pq_generated_by_preferred_sequence.insert(e)
-        if pq_generated_by_preferred_sequence._data == pq._data:
-            return list(preferred_sequence)
-
+    preferred_sequence = []
+    while len(pq):
+        check_list = sorted(pq._data[1 : len(pq) + 1], reverse=True)
+        # check from the largest number
+        for n in check_list:
+            copy_data = pq._data[:]
+            delete_node(n)
+            pq.insert(n)
+            # if the tree keeps the same after delete and insert a particular number n
+            # then prepend this number on preferred_sequence, and then delete n from pq
+            if pq._data[1 : len(pq) + 1] == copy_data[1 : len(pq) + 1]:
+                preferred_sequence.insert(0, n)
+                delete_node(n)
+                break
+            # if the number is not suitable for preferred_sequence, restore pq and examine next number
+            else:
+                pq._data = copy_data[:]
+    return preferred_sequence
     # Replace pass above with your code (altogether, aim for around 24 lines of code)
 
 
@@ -56,4 +75,3 @@ print('The heap that has been generated is: ')
 print(pq._data[ : len(pq) + 1])
 print('The preferred ordering of data to generate this heap by successsive insertion is:')
 print(preferred_sequence())
-
