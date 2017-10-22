@@ -401,7 +401,7 @@ class Sudoku():
 
     def worked_tex_output(self):
         self.flag_not_finish = True
-        self._debug = False
+        self._debug = True
         # generate worked_matrix in which cells are represented by set
         self.worked_matrix = []
         for row in self.marked_matrix:
@@ -412,14 +412,17 @@ class Sudoku():
         # print('before change data structure')
         # generate worked list
         self.flag_not_finish = True
-        while self.flag_not_finish:
+        # while self.flag_not_finish:
+        for i in range(5):
             self.flag_not_finish = False
+            self._remove_singletons_box()
+            self._remove_singletons_row()
+            self._remove_singletons_column()
             self._remove_preemptive_row()
-            self._remark_worded_matrix()            
             self._remove_preemptive_column()
-            self._remark_worded_matrix()                
-            self._remove_preemptive_box()
             self._remark_worded_matrix()
+            self._remove_preemptive_box()
+            # print(self.flag_not_finish)
         # for debug sudoku_4
         # self.worked_matrix = [[{6}, {3}, {9}, {5}, {7}, {4}, {1}, {8}, {2}],
         #                       [{5}, {4}, {1}, {8}, {2}, {9}, {3}, {7}, {6}],
@@ -430,17 +433,6 @@ class Sudoku():
         #                       [{9}, {5}, {6}, {7}, {4}, {8}, {2}, {3}, {1}],
         #                       [{8}, {1}, {3}, {2}, {9}, {6}, {7}, {4}, {5}],
         #                       [{2}, {7}, {4}, {3}, {5}, {1}, {6}, {9}, {8}]
-        #                      ]
-        # self.worked_matrix = [
-        #                       [{2}, {9}, {5}, {7}, {3, 4}, {1, 3, 4}, {8}, {6}, {1, 3, 4}],
-        #                       [{4, 7}, {3}, {1}, {8}, {6}, {5}, {9}, {2}, {4, 7}],
-        #                       [{8}, {4, 7}, {6}, {1, 2, 4, 9}, {9, 2, 3, 4}, {1, 2, 3, 4, 9}, {9, 4, 5}, {1, 3, 4, 9}, {1, 3, 4, 5, 7}],
-        #                       [{1, 3}, {8, 1}, {7}, {9, 2, 4}, {5}, {9, 2, 4}, {9, 2, 4}, {1, 3, 8}, {6}],
-        #                       [{1, 4, 6, 9}, {1, 4, 6}, {9, 2}, {3}, {8}, {7}, {9, 2, 4, 5}, {1, 4, 9}, {1, 4, 5}],
-        #                       [{5}, {8, 4}, {8, 9, 2, 3}, {9, 2, 4}, {1}, {6}, {7}, {8, 9, 3, 4}, {8, 3, 4}],
-        #                       [{3, 6, 7}, {8, 6, 7}, {8, 3}, {5}, {2, 3, 4, 7}, {2, 3, 4}, {1}, {8, 4}, {9}],
-        #                       [{1, 9, 7}, {2}, {8, 9}, {6}, {9, 4, 7}, {1, 4, 9}, {3}, {5}, {8, 4}],
-        #                       [{1, 3, 9}, {5}, {4}, {1, 9}, {9, 3}, {8}, {6}, {7}, {2}]
         #                      ]
         # change data structure of self.worked_matrix
         self.worked_matrix_list = []
@@ -558,25 +550,25 @@ class Sudoku():
                         # middle
                         cell_string += r"}{"+ str(c_worked[0]) +"}"
                     else:                       # both len(c_mark) and len(c_worked) are not 1
-                        for index in [1, 3, 5, 7]:    # i in (1, 3, 5, 7)
+                        for i in [1, 3, 5, 7]:    # i in (1, 3, 5, 7)
                             # top left
                             need_space = False
                             cell_string += "{"
-                            if index in c_worked:       # add first number, also means i in c_worked and c_marked
-                                cell_string += str(index)
+                            if i in c_worked:       # add first number, also means i in c_worked and c_marked
+                                cell_string += str(i)
                                 need_space = True
-                            elif index in c_marked:
-                                cell_string += r"\cancel{" + str(index) + r"}"
+                            elif i in c_marked:
+                                cell_string += r"\cancel{" + str(i) + r"}"
                                 need_space = True
-                            if index+1 in c_marked and need_space:  # add a space
+                            if i+1 in c_marked and need_space:  # add a space
                                 cell_string += " "
-                            if index+1 in c_worked:       # add second number
-                                cell_string += str(index+1)
+                            if i+1 in c_worked:       # add second number
+                                cell_string += str(i+1)
                                 need_space = True
-                            elif index+1 in c_marked:
-                                cell_string += r"\cancel{" + str(index+1) + r"}"
+                            elif i in c_marked:
+                                cell_string += r"\cancel{" + str(i+1) + r"}"
                                 need_space = True
-                            if index != 7:
+                            if i != 7:
                                 cell_string += "}"
                         if 9 in c_marked and need_space:  # add a space
                             cell_string += " "
@@ -586,8 +578,6 @@ class Sudoku():
                             cell_string += r"\cancel{9}"
                         cell_string += r"}{}"
                     row_string.append(cell_string)
-                    # print(row_string)
-                # print(row_string)
                 matrix_string.append(row_string)
             # write latex file
             for line in self.latex_prefix:
@@ -619,138 +609,190 @@ class Sudoku():
                                         )
 
 
-    def _remove_preemptive_row(self):
+    def _remove_singletons_row(self):
+        # scan for each empty cell
         for i in range(9):
-            self._remove_preemptive_single_row(i)
-
-
-    def _remove_preemptive_single_row(self, i):
-        # calculate the max size of preemptive set
-        # minutes 1 because counting all unsolved cell to be a preemptive cell is meaningless
-        nb_of_unsolved_cells = 0
-        for j in range(9):
-            if len(self.worked_matrix[i][j]) == 1:
-                nb_of_unsolved_cells += 1
-        max_size_of_preemptive_set = 9 - nb_of_unsolved_cells - 1
-        # try to find preemtive set
-        for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
-            # generate the set of index of preemptive set combination of index
-            candidates = set()
             for j in range(9):
-                if len(self.worked_matrix[i][j]) > 1 and len(self.worked_matrix[i][j]) <= size_of_preemptive_set:
-                    candidates.add(j)
-            combinations_of_index_set = combinations(candidates, size_of_preemptive_set)
-            # check where an index set can make a preemptive set
-            for index_set in combinations_of_index_set:
-                preemptive_set = set()
-                preemptive_set_cells = []
-                for j in index_set:
-                    # print(i+1, j+1, self.worked_matrix[i][j])
-                    preemptive_set |= self.worked_matrix[i][j]
-                    preemptive_set_cells.append([i + 1, j + 1])
-                if len(preemptive_set) == size_of_preemptive_set:
-                    # find a preemptive set, cross related numbers in other cells
-                    other_index_set = set([0, 1, 2, 3, 4, 5, 6, 7, 8]) - set(index_set)
-                    for j in other_index_set:
-                        saved_cell = self.worked_matrix[i][j].copy()
-                        self.worked_matrix[i][j] -= preemptive_set
-                        if self.worked_matrix[i][j] != saved_cell:
+                if len(self.worked_matrix[i][j]) > 1:
+                    # pick an cadidate value e from the cell
+                    for e in self.worked_matrix[i][j]:
+                        # generate a set contains values in other cells of the same box
+                        other_cell_same_row = set()
+                        for row_j in range(9):
+                            if row_j != j:    # other cell
+                                other_cell_same_row |= self.worked_matrix[i][row_j]
+                        # find whether e is unique in its box
+                        if e not in other_cell_same_row:
+                            self.worked_matrix[i][j] = set([e])
+                            if self._debug:
+                                print('remove a singletons row on: ', i, j)
+                            self._remark_worded_matrix()
                             self.flag_not_finish = True
-                    if self._debug and self.flag_not_finish:
-                        print('preemptive set:', preemptive_set, "on row", i+1, ",", preemptive_set_cells)
+                            return
+
+
+    def _remove_singletons_column(self):
+        # scan for each empty cell
+        for i in range(9):
+            for j in range(9):
+                if len(self.worked_matrix[i][j]) > 1:
+                    # pick an cadidate value e from the cell
+                    for e in self.worked_matrix[i][j]:
+                        # generate a set contains values in other cells of the same box
+                        other_cell_same_column = set()
+                        for column_i in range(9):
+                            if column_i != i:    # other cell
+                                other_cell_same_column |= self.worked_matrix[column_i][j]
+                        # find whether e is unique in its box
+                        if e not in other_cell_same_column:
+                            self.worked_matrix[i][j] = set([e])
+                            if self._debug:
+                                print('remove a singletons column on: ', i, j)
+                            self._remark_worded_matrix()
+                            self.flag_not_finish = True
+                            return
+
+
+    def _remove_singletons_box(self):
+        # scan for each empty cell
+        for i in range(9):
+            for j in range(9):
+                if len(self.worked_matrix[i][j]) > 1:
+                    # pick an cadidate value e from the cell
+                    for e in self.worked_matrix[i][j]:
+                        # generate a set contains values in other cells of the same box
+                        other_cell_same_box = set()
+                        for box_i in range(i // 3 *3, i // 3 *3 + 3):
+                            for box_j in range(j // 3 *3, j // 3 *3 + 3):
+                                if box_i != i or box_j != j:    # other cell
+                                    other_cell_same_box |= self.worked_matrix[box_i][box_j]
+                        # find whether e is unique in its box
+                        if e not in other_cell_same_box:
+                            self.worked_matrix[i][j] = set([e])
+                            if self._debug:
+                                print('remove a singletons box on: ', i, j)
+                            self._remark_worded_matrix()
+                            self.flag_not_finish = True
+                            return
+
+
+    def _remove_preemptive_row(self):
+        for row in self.worked_matrix:
+            # calculate the max size of preemptive set
+            max_size_of_preemptive_set = 9 - 2
+            for cell in row:
+                if len(cell) == 1:
+                    max_size_of_preemptive_set -= 1
+            # try to find preemtive set
+            for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
+                # generate the index of preemptive set
+                candidate_index = set()
+                for j in range(9):
+                    if len(row[j]) > 1 and len(row[j]) <= size_of_preemptive_set:
+                        candidate_index.add(j)
+                # generate combination of index
+                combination_of_candidate_index = combinations(candidate_index, size_of_preemptive_set)
+                for set_of_candidate_index in combination_of_candidate_index:
+                    preemptive_set = set()
+                    for index_of_candidate in set_of_candidate_index:
+                        preemptive_set |= row[index_of_candidate]
+                    if len(preemptive_set) == size_of_preemptive_set:
+                        # find a preemptive set, cross related numbers in other cells
+                        set_of_other_index = set([0, 1, 2, 3, 4, 5, 6, 7, 8]) - set(set_of_candidate_index)
+                        for index_of_other in set_of_other_index:
+                            row[index_of_other] -= preemptive_set
+                        if self._debug:
+                            print('find a preemptive row on: ', preemptive_set, set_of_candidate_index)
+                        self._remark_worded_matrix()
+                        self.flag_not_finish = True
+                        return
 
 
     def _remove_preemptive_column(self):
         for j in range(9):
-            self._remove_preemptive_single_column(j)
-
-
-    def _remove_preemptive_single_column(self, j):
-        # calculate the max size of preemptive set
-        # minutes 1 because counting all unsolved cell to be a preemptive cell is meaningless
-        nb_of_unsolved_cells = 0
-        for i in range(9):
-            if len(self.worked_matrix[i][j]) == 1:
-                nb_of_unsolved_cells += 1
-        max_size_of_preemptive_set = 9 - nb_of_unsolved_cells - 1
-        # try to find preemtive set
-        for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
-            # generate the set of index of preemptive set combination of index
-            candidates = set()
+            # calculate the max size of preemptive set
+            max_size_of_preemptive_set = 9 - 2
             for i in range(9):
-                if len(self.worked_matrix[i][j]) > 1 and len(self.worked_matrix[i][j]) <= size_of_preemptive_set:
-                    candidates.add(i)
-            combinations_of_index_set = combinations(candidates, size_of_preemptive_set)
-            # check where an index set can make a preemptive set
-            for index_set in combinations_of_index_set:
-                preemptive_set = set()
-                preemptive_set_cells = []
-                for i in index_set:
-                    # print(i+1, j+1, self.worked_matrix[i][j])
-                    preemptive_set |= self.worked_matrix[i][j]
-                    preemptive_set_cells.append([i + 1, j + 1])
-                if len(preemptive_set) == size_of_preemptive_set:
-                    # find a preemptive set, cross related numbers in other cells
-                    other_index_set = set([0, 1, 2, 3, 4, 5, 6, 7, 8]) - set(index_set)
-                    for i in other_index_set:
-                        saved_cell = self.worked_matrix[i][j].copy()
-                        self.worked_matrix[i][j] -= preemptive_set
-                        if self.worked_matrix[i][j] != saved_cell:
-                            self.flag_not_finish = True
-                    if self._debug and self.flag_not_finish:
-                        print('preemptive set:', preemptive_set, "on column", j+1, ",", preemptive_set_cells)
+                if len(self.worked_matrix[i][j]) == 1:
+                    max_size_of_preemptive_set -= 1
+            # try to find preemtive set
+            for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
+                # generate the index of preemptive set
+                candidate_index = set()
+                for i in range(9):
+                    if len(self.worked_matrix[i][j]) > 1 \
+                            and len(self.worked_matrix[i][j]) <= size_of_preemptive_set:
+                        candidate_index.add(i)
+                # generate combination of index
+                combination_of_candidate_index = combinations(candidate_index, size_of_preemptive_set)
+                for set_of_candidate_index in combination_of_candidate_index:
+                    preemptive_set = set()
+                    for index_of_candidate in set_of_candidate_index:
+                        preemptive_set |= self.worked_matrix[index_of_candidate][j]
+                    if len(preemptive_set) == size_of_preemptive_set:
+                        # find a preemptive set, cross related numbers in other cells
+                        set_of_other_index = set([0, 1, 2, 3, 4, 5, 6, 7, 8]) - set(set_of_candidate_index)
+                        for index_of_other in set_of_other_index:
+                            # print('before', self.worked_matrix[index_of_other][j])
+                            self.worked_matrix[index_of_other][j] -= preemptive_set
+                            # print('after', self.worked_matrix[index_of_other][j])
+                            # print('after remonve column')
+                            # print(self.worked_matrix)
+                        if self._debug:
+                            print('find a preemptive column on: ', index_of_candidate)
+                        # self._remark_worded_matrix()
+                        self.flag_not_finish = True
+                        return
 
 
     def _remove_preemptive_box(self):
-        # for no_of_box 0, 1, 2, i is in range(0, 3)
-        # for no_of_box 3, 4, 5, i is in range(3, 6)
-        # for no_of_box 6, 7, 8, i is in range(6, 9)
-        # therefore:        i in range(no_of_box // 3 * 3, no_of_box // 3 * 3 + 3)
-        # for no_of_box 0, 3, 6, j is in range(0, 3)
-        # for no_of_box 1, 4, 6, j is in range(3, 6)
-        # for no_of_box 2, 5, 8, j is in range(6, 9)
-        # therefore:        j in range(no_of_box % 3 * 3, no_of_box % 3 * 3 + 3)
         for no_of_box in range(9):
-            self._remove_preemptive_single_box(no_of_box)
-
-
-    def _remove_preemptive_single_box(self, no_of_box):
-        # calculate the max size of preemptive set and complete_set_of index
-        nb_of_unsolved_cells = 0
-        complete_index_set = set()
-        for i in range(no_of_box // 3 * 3, no_of_box // 3 * 3 + 3):
-            for j in range(no_of_box % 3 * 3, no_of_box % 3 * 3 + 3):
-                complete_index_set.add((i, j))
-                if len(self.worked_matrix[i][j]) == 1:
-                    nb_of_unsolved_cells += 1
-        max_size_of_preemptive_set = 9 - nb_of_unsolved_cells - 1
-        # try to find preemtive set
-        for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
-            # generate the index pair of preemptive set
-            candidates = set()
+            # for no_of_box 0, 1, 2, i is in range(0, 3)
+            # for no_of_box 3, 4, 5, i is in range(3, 6)
+            # for no_of_box 6, 7, 8, i is in range(6, 9)
+            # for no_of_box 0, 3, 6, j is in range(0, 3)
+            # for no_of_box 1, 4, 6, j is in range(3, 6)
+            # for no_of_box 2, 5, 8, j is in range(6, 9)
+            # therefore:
+            #   i in range(no_of_box // 3 * 3, no_of_box // 3 * 3 + 3)
+            #   j in range(no_of_box % 3 * 3, no_of_box % 3 * 3 + 3)
+            #
+            # calculate the max size of preemptive set and complete_set_of index
+            max_size_of_preemptive_set = 9 - 2
+            complete_set_of_index = set()
             for i in range(no_of_box // 3 * 3, no_of_box // 3 * 3 + 3):
                 for j in range(no_of_box % 3 * 3, no_of_box % 3 * 3 + 3):
-                    if len(self.worked_matrix[i][j]) > 1 \
-                            and len(self.worked_matrix[i][j]) <= size_of_preemptive_set:
-                        candidates.add((i, j))
-            # generate combination of index
-            combinations_of_index_set = combinations(candidates, size_of_preemptive_set)
-            for index_set in combinations_of_index_set:
-                preemptive_set = set()
-                preemptive_set_cells = []
-                for (i, j) in index_set:
-                    preemptive_set |= self.worked_matrix[i][j]
-                    preemptive_set_cells.append([i + 1, j + 1])
-                if len(preemptive_set) == size_of_preemptive_set:
-                    # find a preemptive set, cross related numbers in other cells
-                    other_index_set = complete_index_set - set(index_set)
-                    for (i, j) in other_index_set:
-                        saved_cell = self.worked_matrix[i][j].copy()
-                        self.worked_matrix[i][j] -= preemptive_set
-                        if self.worked_matrix[i][j] != saved_cell:
-                            self.flag_not_finish = True
-                    if self._debug and self.flag_not_finish:
-                        print('preemptive set:', preemptive_set, "on box", no_of_box+1, ",", preemptive_set_cells)
+                    complete_set_of_index.add((i, j))
+                    if len(self.worked_matrix[i][j]) == 1:
+                        max_size_of_preemptive_set -= 1
+            # try to find preemtive set
+            for size_of_preemptive_set in range(2, max_size_of_preemptive_set + 1):
+                # generate the index pair of preemptive set
+                candidate_index = set()
+                for i in range(no_of_box // 3 * 3, no_of_box // 3 * 3 + 3):
+                    for j in range(no_of_box % 3 * 3, no_of_box % 3 * 3 + 3):
+                        if len(self.worked_matrix[i][j]) > 1 \
+                                and len(self.worked_matrix[i][j]) <= size_of_preemptive_set:
+                            candidate_index.add((i, j))
+                # generate combination of index
+                combination_of_candidate_index = combinations(candidate_index, size_of_preemptive_set)
+                for set_of_candidate_index in combination_of_candidate_index:
+                    preemptive_set = set()
+                    for index_of_candidate in set_of_candidate_index:
+                        preemptive_set |= self.worked_matrix[index_of_candidate[0]][index_of_candidate[1]]
+                    if len(preemptive_set) == size_of_preemptive_set:
+                        # find a preemptive set, cross related numbers in other cells
+                        set_of_other_index = complete_set_of_index - set(set_of_candidate_index)
+                        # print(preemptive_set)
+                        for index_of_other in set_of_other_index:
+                            # print('before: ', self.worked_matrix[index_of_other[0]][index_of_other[1]])
+                            self.worked_matrix[index_of_other[0]][index_of_other[1]] -= preemptive_set
+                            # print('after: ', self.worked_matrix[index_of_other[0]][index_of_other[1]])
+                        if self._debug:
+                            print('find a preemptive box on: ', set_of_candidate_index)
+                        # self._remark_worded_matrix()
+                        self.flag_not_finish = True
+                        return
 
 
     def _remark_worded_matrix(self):
@@ -775,7 +817,7 @@ class Sudoku():
                             if len(copied_matrix[box_i][box_j]) == 1:
                                 set_box |= copied_matrix[box_i][box_j]
                     # generate cell: {1, 2, 3, 4, 5, 6, 7, 8 ,9} - row - column - box
-                    self.worked_matrix[i][j] = self.worked_matrix[i][j] - set_row - set_column - set_box
+                    self.worked_matrix[i][j] = set([1, 2, 3, 4, 5, 6, 7, 8 ,9]) - set_row - set_column - set_box
 
 
 if __name__ == '__main__':
@@ -788,4 +830,4 @@ if __name__ == '__main__':
     sudoku.worked_tex_output()
     # print_matrix(sudoku.marked_matrix)
     # print()
-    # print_matrix(sudoku.worked_matrix)
+    # print(sudoku.worked_matrix)
